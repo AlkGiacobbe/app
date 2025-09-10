@@ -153,7 +153,17 @@ def load_and_normalize(file) -> pd.DataFrame:
     )
     out["date"] = out["ts"].dt.date
     out["week"] = out["ts"].dt.to_period("W-MON").dt.start_time  # settimana con lunedì start
+    # Giorno della settimana: fallback se la locale it_IT non è installata sul sistema
+try:
     out["weekday"] = out["ts"].dt.day_name(locale="it_IT")
+except Exception:
+    # usa nomi inglesi e mappa a italiano per visualizzazione
+    _tmp = out["ts"].dt.day_name()
+    _map = {
+        "Monday": "Lunedì", "Tuesday": "Martedì", "Wednesday": "Mercoledì",
+        "Thursday": "Giovedì", "Friday": "Venerdì", "Saturday": "Sabato", "Sunday": "Domenica"
+    }
+    out["weekday"] = _tmp.map(_map).fillna(_tmp)
     out["weekday_num"] = out["ts"].dt.weekday  # 0=Lun
     out["hour"] = out["ts"].dt.hour
     return out
